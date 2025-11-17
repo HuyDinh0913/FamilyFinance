@@ -1,0 +1,1971 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bảng điều khiển Tài chính Gia đình</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Custom scrollbar */
+        .overflow-y-auto::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .overflow-y-auto::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .overflow-y-auto::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0;
+        }
+
+        /* Animations */
+        .fade-in {
+            opacity: 0;
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+
+        .slide-in-right {
+            opacity: 0;
+            transform: translateX(20px);
+            animation: slideInRight 0.8s ease-out forwards;
+        }
+
+        .slide-in-left {
+            opacity: 0;
+            transform: translateX(-20px);
+            animation: slideInLeft 0.8s ease-out forwards;
+        }
+
+        .delay-100 {
+            animation-delay: 0.1s;
+        }
+
+        .delay-200 {
+            animation-delay: 0.2s;
+        }
+
+        .delay-300 {
+            animation-delay: 0.3s;
+        }
+
+        .delay-400 {
+            animation-delay: 0.4s;
+        }
+
+        .delay-500 {
+            animation-delay: 0.5s;
+        }
+
+        .delay-600 {
+            animation-delay: 0.6s;
+        }
+
+        .delay-700 {
+            animation-delay: 0.7s;
+        }
+
+        .delay-800 {
+            animation-delay: 0.8s;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideInRight {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInLeft {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .progress-bar-fill {
+            transition: width 1s ease-out;
+        }
+
+        /* Toast notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 10px;
+        }
+
+        .toast {
+            background-color: #333;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            animation: toastIn 0.5s forwards, toastOut 0.5s forwards 3s;
+        }
+
+        .toast.success {
+            background-color: #22c55e;
+        }
+
+        .toast.error {
+            background-color: #ef4444;
+        }
+
+        @keyframes toastIn {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes toastOut {
+            from {
+                transform: translateY(0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+        }
+
+        /* Modal animations */
+        .modal-bg-animate {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+
+        .modal-content-animate {
+            transform: scale(0.95);
+            opacity: 0;
+            animation: modalScaleIn 0.3s ease-out forwards;
+        }
+
+        @keyframes modalScaleIn {
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* ===== CSS CHO SIDEBAR THU GỌN ===== */
+        #sidebar {
+            transition: width 0.3s ease-in-out;
+            /* Đảm bảo sidebar luôn ở trên khi co lại trên mobile */
+            z-index: 20;
+        }
+
+        #mainContent {
+            /* transition: margin-left 0.3s ease-in-out; */
+            /* width: 100%; */
+            /* @media (min-width: 768px) {
+                margin-left: 320px;
+            } */
+        }
+
+        /* Class ".sidebar-text" sẽ được thêm vào tất cả văn bản */
+        .sidebar-text {
+            transition: opacity 0.2s ease, max-width 0.3s ease;
+            overflow: hidden;
+            white-space: nowrap;
+            max-width: 300px;
+            /* Chiều rộng ban đầu */
+            opacity: 1;
+        }
+
+        /* TRẠNG THÁI KHI THU GỌN (khi body có class .sidebar-collapsed) */
+        body.sidebar-collapsed #sidebar {
+            /* w-20 */
+            width: 100px;
+        }
+
+        body.sidebar-collapsed #mainContent {
+
+            /* Đặt margin-left trên desktop
+            @media (min-width: 768px) {
+                margin-left: 100px;
+            } */
+        }
+
+        /* Ẩn văn bản */
+        body.sidebar-collapsed .sidebar-text {
+            opacity: 0;
+            max-width: 0px;
+            margin-left: 10px;
+            /* Giúp hiệu ứng đẹp hơn */
+        }
+
+        /* Căn giữa icon khi thu gọn */
+        body.sidebar-collapsed .nav-link {
+            /* justify-content: center; */
+        }
+
+        /* Xóa khoảng cách (space-x) khi thu gọn */
+        body.sidebar-collapsed .nav-link > * + * {
+            margin-left: 0;
+        }
+
+        /* Ẩn tiêu đề chính */
+        body.sidebar-collapsed #sidebarTitle {
+            display: none;
+        }
+
+        /* Thay đổi icon nút Thu gọn */
+        body.sidebar-collapsed #sidebarToggleIconOpen {
+            display: none;
+        }
+
+        body:not(.sidebar-collapsed) #sidebarToggleIconClosed {
+            display: none;
+        }
+
+        /* ================================== */
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="flex flex-col md:flex-row min-h-screen">
+        <div id="sidebar"
+            class="w-full md:w-80 flex-shrink-0 bg-gradient-to-br from-blue-700 to-blue-900 shadow-lg p-6 rounded-b-lg md:rounded-r-lg md:rounded-bl-none text-white fade-in delay-100">
+            <h2 id="sidebarTitle" class="text-3xl font-bold mb-8 text-center md:text-left sidebar-text">Tài chính Gia
+                đình
+            </h2>
+
+            <button id="sidebarToggleBtn"
+                class="nav-link flex items-center space-x-3 p-2 rounded-lg hover:bg-blue-600 transition-colors w-full mb-6">
+                <svg id="sidebarToggleIconOpen" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                </svg>
+                <svg id="sidebarToggleIconClosed" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                </svg>
+                <div class="sidebar-text font-medium text-lg">Thu gọn</div>
+            </button>
+
+            <nav class="mb-10">
+                <h3 class="font-semibold text-blue-200 uppercase text-sm mb-4 sidebar-text">Điều hướng</h3>
+                <div class="space-y-2">
+                    <a href="#" id="dashboardLink" data-page="dashboardPage"
+                        class="nav-link flex items-center space-x-3 p-2 rounded-lg hover:bg-blue-600 transition-colors slide-in-left delay-200 bg-blue-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                        </svg>
+                        <div class="sidebar-text">
+                            <p class="font-medium text-lg">Tổng quan</p>
+                        </div>
+                    </a>
+                    <a href="#" data-page="budgetPage"
+                        class="nav-link flex items-center space-x-3 p-2 rounded-lg hover:bg-blue-600 transition-colors slide-in-left delay-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <div class="sidebar-text">
+                            <p class="font-medium text-lg">Ngân sách</p>
+                        </div>
+                    </a>
+                    <a href="#" data-page="savingsGoalsPage"
+                        class="nav-link flex items-center space-x-3 p-2 rounded-lg hover:bg-blue-600 transition-colors slide-in-left delay-350">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                        </svg>
+                        <div class="sidebar-text">
+                            <p class="font-medium text-lg">Mục tiêu</p>
+                        </div>
+                    </a>
+                </div>
+
+                <h3 class="font-semibold text-blue-200 uppercase text-sm mb-4 mt-8 sidebar-text">Thành viên</h3>
+                <div id="memberNavList" class="space-y-2">
+                </div>
+            </nav>
+
+            <button id="logoutButton"
+                class="w-full nav-link flex items-center space-x-3 p-2 rounded-lg hover:bg-blue-600 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                <span class="sidebar-text font-medium text-lg">Đăng xuất</span>
+            </button>
+
+            <button id="openModalBtnDesktop"
+                class="w-full mt-10 bg-white text-blue-700 py-3 rounded-lg font-semibold hover:bg-gray-100 transition duration-300 shadow-lg hidden md:flex items-center space-x-3 nav-link fade-in delay-800"
+                style="padding-left: 0.5rem; padding-right: 0.5rem;">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span class="sidebar-text">Thêm Giao dịch</span>
+            </button>
+        </div>
+        <main id="mainContent" class="flex-1 overflow-x-auto" >
+            <div id="dashboardPage" class="flex-1 p-2 md:p-4 overflow-auto">
+                <header class="mb-4 fade-in delay-200">
+                    <h1 class="text-4xl font-extrabold text-gray-900">Tổng quan Tài chính</h1>
+                    <p class="text-gray-500 text-lg mt-2" id="currentDate">Chào mừng trở lại!</p>
+                </header>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                    <div
+                        class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 transform hover:-translate-y-1 fade-in delay-300">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h3 class="font-semibold text-gray-500 text-sm">Tổng Thu nhập</h3>
+                                <p id="statTotalIncome" class="text-2xl lg:text-3xl font-bold text-green-600 mt-1">0 ₫
+                                </p>
+                            </div>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-14 h-14 text-green-500" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                            </svg>
+                        </div>
+                        <p class="text-sm text-gray-400" id="statMonth">Tháng này</p>
+                    </div>
+                    <div
+                        class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 transform hover:-translate-y-1 fade-in delay-400">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h3 class="font-semibold text-gray-500 text-sm">Tổng Chi tiêu</h3>
+                                <p id="statTotalExpense" class="text-2xl lg:text-3xl font-bold text-red-600 mt-1">0 ₫
+                                </p>
+                            </div>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-14 h-14 text-red-500" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6" />
+                            </svg>
+                        </div>
+                        <p class="text-sm text-gray-400" id="statExpensePercentage">Đã chi 0%</p>
+                    </div>
+                    <div
+                        class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 transform hover:-translate-y-1 fade-in delay-500">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h3 class="font-semibold text-gray-500 text-sm">Tiết kiệm</h3>
+                                <p id="statTotalSavings" class="text-2xl lg:text-3xl font-bold text-blue-600 mt-1">0 ₫
+                                </p>
+                            </div>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-14 h-14 text-blue-500" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M8 7v8a2 2 0 002 2h4a2 2 0 002-2V7a2 2 0 00-2-2h-4a2 2 0 00-2 2z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v3m0 3v-3m0 0h3m-3 0H9" />
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M3.05 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 002-2v-1a2 2 0 012-2h1.95" />
+                            </svg>
+                        </div>
+                        <p class="text-sm text-gray-400">Tháng này</p>
+                    </div>
+                    <div
+                        class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 transform hover:-translate-y-1 fade-in delay-600">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h3 class="font-semibold text-gray-500 text-sm">Tổng Mục tiêu</h3>
+                                <p id="statSavingGoals" class="text-2xl lg:text-3xl font-bold text-purple-600 mt-1">0 ₫
+                                </p>
+                            </div>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-14 h-14 text-purple-500" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                            </svg>
+                        </div>
+                        <p class="text-sm text-gray-400">Đã tiết kiệm</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+                    <div class="bg-white p-6 rounded-xl shadow-md slide-in-left delay-700">
+                        <h3 class="text-xl font-bold mb-4 text-gray-800">Phân tích Chi tiêu</h3>
+                        <div class="h-64 md:h-96">
+                            <canvas id="expenseChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl shadow-md max-h-[500px] overflow-y-auto slide-in-right delay-700">
+                        <h3 class="text-xl font-bold mb-4 text-gray-800">Giao dịch Gần đây</h3>
+                        <div class="w-full overflow-x-auto">
+                            <table class="w-full text-left" id="transactionsTable">
+                                <thead>
+                                    <tr class="text-sm text-gray-500 border-b-2 border-gray-100">
+                                        <th class="py-3 font-medium">Mô tả</th>
+                                        <th class="py-3 font-medium">Thành viên</th>
+                                        <th class="py-3 font-medium">Ngày</th>
+                                        <th class="py-3 font-medium text-right">Số tiền</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-white p-6 rounded-xl shadow-md slide-in-left delay-800">
+                        <h3 class="text-xl font-bold mb-5 text-gray-800">Mục tiêu Tiết kiệm</h3>
+                        <div class="space-y-6" id="dashboardSavingsContainer">
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl shadow-md slide-in-right delay-800">
+                        <h3 class="text-xl font-bold mb-4 text-gray-800">Chi tiêu của Con cái (Tháng 11)</h3>
+                        <div class="space-y-5" id="dashboardChildSpending">
+                            <p class="text-gray-500">Đang tải chi tiêu thành viên...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="savingsGoalsPage" class="flex-1 p-6 md:p-10 overflow-auto hidden member-detail-page">
+                <header class="mb-8 fade-in">
+                    <a href="#" class="back-to-dashboard text-blue-600 hover:underline mb-4 inline-block">&larr; Quay
+                        lại
+                        Tổng quan</a>
+                    <h1 class="text-4xl font-extrabold text-gray-900">Mục tiêu Tiết kiệm</h1>
+                    <p class="text-gray-500 text-lg mt-2">Theo dõi và quản lý các quỹ tiết kiệm của bạn.</p>
+                </header>
+                <div class="mb-6 fade-in delay-200">
+                    <button id="openSavingsGoalModalBtn"
+                        class="bg-blue-600 text-white px-5 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-md flex items-center space-x-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        <span>Thêm Mục tiêu Mới</span>
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="savingsGoalListContainer">
+                </div>
+            </div>
+
+            <div id="budgetPage" class="flex-1 p-6 md:p-10 overflow-auto hidden member-detail-page">
+                <header class="mb-8 fade-in">
+                    <a href="#" class="back-to-dashboard text-blue-600 hover:underline mb-4 inline-block">&larr; Quay
+                        lại
+                        Tổng quan</a>
+                    <h1 class="text-4xl font-extrabold text-gray-900">Quản lý Ngân sách</h1>
+                    <p class="text-gray-500 text-lg mt-2">Theo dõi và thiết lập hạn mức chi tiêu hàng tháng.</p>
+                </header>
+                <div class="mb-6 fade-in delay-200">
+                    <button id="openBudgetModalBtn"
+                        class="bg-blue-600 text-white px-5 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-md flex items-center space-x-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        <span>Thêm Hạng mục</span>
+                    </button>
+                </div>
+                <div class="space-y-4" id="budgetListContainer">
+                </div>
+            </div>
+
+            <div id="memberDetailPage" class="flex-1 p-6 md:p-10 overflow-auto hidden member-detail-page">
+
+                <header class="mb-8 fade-in">
+                    <a href="#" class="back-to-dashboard text-blue-600 hover:underline mb-4 inline-block">&larr; Quay
+                        lại
+                        Tổng quan</a>
+                    <h1 id="memberDetailName" class="text-4xl font-extrabold text-gray-900">...</h1>
+                    <p class="text-gray-500 text-lg mt-2">Xem chi tiết thu chi của thành viên này.</p>
+                </header>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-xl shadow-md fade-in delay-200">
+                        <h3 class="font-semibold text-gray-500 text-sm">Tổng Thu (Tháng này)</h3>
+                        <p id="memberStatIncome" class="text-3xl font-bold text-green-600 mt-1">0 ₫</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-md fade-in delay-300">
+                        <h3 class="font-semibold text-gray-500 text-sm">Tổng Chi (Tháng này)</h3>
+                        <p id="memberStatExpense" class="text-3xl font-bold text-red-600 mt-1">0 ₫</p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-md fade-in delay-400">
+                    <h3 class="text-xl font-bold mb-4 text-gray-800">Tất cả Giao dịch</h3>
+                    <div class="w-full overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="text-sm text-gray-500 border-b-2 border-gray-100">
+                                    <th class="py-3 font-medium">Mô tả</th>
+                                    <th class="py-3 font-medium">Ngày</th>
+                                    <th class="py-3 font-medium text-right">Số tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody id="memberDetailTransactionBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div> <button id="openModalBtnMobile"
+        class="md:hidden fixed bottom-6 right-6 bg-blue-600 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg text-3xl font-semibold z-40 animate-bounce">
+        +
+    </button>
+
+    <div id="transactionModal"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50 modal-bg-animate">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 relative modal-content-animate">
+            <button id="closeModalBtn"
+                class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl font-bold">&times;</button>
+            <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">Thêm Giao dịch Mới</h2>
+
+            <form id="transactionForm" class="space-y-4">
+                <div class="flex gap-4">
+                    <label class="flex-1">
+                        <input type="radio" name="type" value="expense" class="peer hidden" checked>
+                        <div
+                            class="p-3 rounded-lg border border-gray-300 text-center cursor-pointer peer-checked:bg-red-100 peer-checked:border-red-500 peer-checked:text-red-700 font-medium transition-colors hover:bg-gray-50">
+                            Chi tiêu</div>
+                    </label>
+                    <label class="flex-1">
+                        <input type="radio" name="type" value="income" class="peer hidden">
+                        <div
+                            class="p-3 rounded-lg border border-gray-300 text-center cursor-pointer peer-checked:bg-green-100 peer-checked:border-green-500 peer-checked:text-green-700 font-medium transition-colors hover:bg-gray-50">
+                            Thu nhập</div>
+                    </label>
+                </div>
+                <div>
+                    <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Mô tả</label>
+                    <input type="text" id="description" name="description" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label for="amount" class="block text-sm font-medium text-gray-700 mb-1">Số tiền (₫)</label>
+                    <input type="number" id="amount" name="amount" required min="1"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label for="category" class="block text-sm font-medium text-gray-700 mb-1">Danh mục</label>
+                    <select id="category" name="budgetId"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <option value="">Đang tải danh mục...</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="member" class="block text-sm font-medium text-gray-700 mb-1">Thành viên</label>
+                    <select id="member" name="member"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <option value="">Đang tải thành viên...</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="transactionDate" class="block text-sm font-medium text-gray-700 mb-1">Ngày Giao
+                        dịch</label>
+                    <input type="date" id="transactionDate" name="transactionDate" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="flex gap-4 mt-6">
+                    <button type="button" id="saveAndContinueBtn"
+                        class="flex-1 w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition duration-300 shadow-lg">
+                        Thêm & Tiếp
+                    </button>
+                    <button type="button" id="saveTransactionBtn"
+                        class="flex-1 w-full bg-gray-600 text-white py-3 rounded-lg font-semibold hover:bg-gray-700 transition duration-300 shadow-lg">
+                        Thêm
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="savingsGoalModal"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50 modal-bg-animate">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 relative modal-content-animate">
+            <button id="closeSavingsGoalModalBtn"
+                class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl font-bold">&times;</button>
+            <h2 id="savingsGoalModalTitle" class="text-2xl font-bold mb-6 text-center text-gray-800">Thêm Mục tiêu Mới
+            </h2>
+            <form id="savingsGoalForm" class="space-y-4">
+                <input type="hidden" id="savingsGoalId" name="savingsGoalId">
+                <div>
+                    <label for="goalName" class="block text-sm font-medium text-gray-700 mb-1">Tên Mục tiêu</label>
+                    <input type="text" id="goalName" name="goalName" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="VD: Quỹ Đại học">
+                </div>
+                <div>
+                    <label for="goalTarget" class="block text-sm font-medium text-gray-700 mb-1">Số tiền (₫)</label>
+                    <input type="number" id="goalTarget" name="goalTarget" required min="1"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="VD: 500000000">
+                </div>
+                <button type="submit" id="saveSavingsGoalBtn"
+                    class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition duration-300 shadow-lg mt-4">
+                    Lưu
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="addFundsModal"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50 modal-bg-animate">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 relative modal-content-animate">
+            <button id="closeAddFundsModalBtn"
+                class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl font-bold">&times;</button>
+            <h2 id="addFundsModalTitle" class="text-2xl font-bold mb-6 text-center text-gray-800">Thêm Tiền</h2>
+            <p class="text-center text-gray-600 -mt-4 mb-6" id="addFundsGoalName"></p>
+            <form id="addFundsForm" class="space-y-4">
+                <input type="hidden" id="addFundsGoalId" name="addFundsGoalId">
+                <div>
+                    <label for="fundsAmount" class="block text-sm font-medium text-gray-700 mb-1">Số tiền (₫)</label>
+                    <input type="number" id="fundsAmount" name="fundsAmount" required min="1"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Nhập số tiền muốn thêm">
+                </div>
+                <button type="submit"
+                    class="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition duration-300 shadow-lg mt-4">
+                    Thêm
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="budgetModal"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50 modal-bg-animate">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 relative modal-content-animate">
+            <button id="closeBudgetModalBtn"
+                class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl font-bold">&times;</button>
+            <h2 id="budgetModalTitle" class="text-2xl font-bold mb-6 text-center text-gray-800">Thêm Hạng mục Ngân sách
+            </h2>
+            <form id="budgetForm" class="space-y-4">
+                <input type="hidden" id="budgetId" name="budgetId">
+                <div>
+                    <label for="budgetCategory" class="block text-sm font-medium text-gray-700 mb-1">Tên Hạng
+                        mục</label>
+                    <input type="text" id="budgetCategory" name="budgetCategory" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="VD: Ăn uống">
+                </div>
+                <div>
+                    <label for="budgetLimit" class="block text-sm font-medium text-gray-700 mb-1">Hạn mức (₫)</label>
+                    <input type="number" id="budgetLimit" name="budgetLimit" required min="0"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="VD: 10000000">
+                </div>
+                <button type="submit" id="saveBudgetBtn"
+                    class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition duration-300 shadow-lg mt-4">
+                    Lưu
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="confirmDeleteModal"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50 modal-bg-animate">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-sm p-6 relative modal-content-animate">
+            <h2 class="text-xl font-bold mb-4 text-center text-gray-800">Bạn có chắc chắn?</h2>
+            <p class="text-gray-600 text-center mb-6" id="confirmDeleteText">Bạn có muốn xóa mục này không? Hành động
+                này không thể hoàn tác.</p>
+            <div class="flex gap-4">
+                <button id="cancelDeleteBtn"
+                    class="flex-1 w-full bg-gray-200 text-gray-800 py-2 rounded-lg font-semibold hover:bg-gray-300 transition-colors">
+                    Hủy
+                </button>
+                <button id="confirmDeleteBtn"
+                    class="flex-1 w-full bg-red-600 text-white py-2 rounded-lg font-semibold hover:bg-red-700 transition-colors shadow-md">
+                    Xóa
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- CÀI ĐẶT API & TRẠNG THÁI TOÀN CỤC ---
+            const API_BASE_URL = 'http://localhost:3000';
+
+            // ===== LẤY TOKEN (Sửa lỗi 1 & 2) =====
+            const JWT_TOKEN = localStorage.getItem('accessToken');
+            if (!JWT_TOKEN) {
+                console.error("Không tìm thấy JWT Token! Chuyển về trang đăng nhập.");
+                window.location.href = './login.html';
+                return;
+            }
+            // ===================================
+
+
+            // Lưu trữ dữ liệu từ API
+            let allTransactions = [];
+            let allBudgets = [];
+            let allSavingsGoals = [];
+            let allMembers = [];
+            
+            // Biến biểu đồ
+            let expenseChart;
+
+            // --- BỘ CHỌN (Selectors) ---
+            const modal = document.getElementById('transactionModal');
+            const openModalBtns = [document.getElementById('openModalBtnDesktop'), document.getElementById('openModalBtnMobile')];
+            const closeModalBtn = document.getElementById('closeModalBtn');
+            const transactionForm = document.getElementById('transactionForm');
+            const transactionsTableBody = document.getElementById('transactionsTable').getElementsByTagName('tbody')[0];
+
+            const saveTransactionBtn = document.getElementById('saveTransactionBtn');
+            const saveAndContinueBtn = document.getElementById('saveAndContinueBtn');
+
+            const budgetModal = document.getElementById('budgetModal');
+            const openBudgetModalBtn = document.getElementById('openBudgetModalBtn');
+            const closeBudgetModalBtn = document.getElementById('closeBudgetModalBtn');
+            const budgetForm = document.getElementById('budgetForm');
+            const budgetModalTitle = document.getElementById('budgetModalTitle');
+            const saveBudgetBtn = document.getElementById('saveBudgetBtn');
+            const budgetIdInput = document.getElementById('budgetId');
+            const budgetCategoryInput = document.getElementById('budgetCategory');
+            const budgetLimitInput = document.getElementById('budgetLimit');
+            const budgetListContainer = document.getElementById('budgetListContainer');
+
+            const savingsGoalModal = document.getElementById('savingsGoalModal');
+            const openSavingsGoalModalBtn = document.getElementById('openSavingsGoalModalBtn');
+            const closeSavingsGoalModalBtn = document.getElementById('closeSavingsGoalModalBtn');
+            const savingsGoalForm = document.getElementById('savingsGoalForm');
+            const savingsGoalModalTitle = document.getElementById('savingsGoalModalTitle');
+            const saveSavingsGoalBtn = document.getElementById('saveSavingsGoalBtn');
+            const savingsGoalIdInput = document.getElementById('savingsGoalId');
+            const goalNameInput = document.getElementById('goalName');
+            const goalTargetInput = document.getElementById('goalTarget');
+            const savingsGoalListContainer = document.getElementById('savingsGoalListContainer');
+            const dashboardSavingsContainer = document.getElementById('dashboardSavingsContainer');
+
+            const addFundsModal = document.getElementById('addFundsModal');
+            const closeAddFundsModalBtn = document.getElementById('closeAddFundsModalBtn');
+            const addFundsForm = document.getElementById('addFundsForm');
+            const addFundsGoalName = document.getElementById('addFundsGoalName');
+            const addFundsGoalIdInput = document.getElementById('addFundsGoalId');
+            const fundsAmountInput = document.getElementById('fundsAmount');
+
+            const confirmDeleteModal = document.getElementById('confirmDeleteModal');
+            const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+            const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+            const confirmDeleteText = document.getElementById('confirmDeleteText');
+            let deleteCallback = null;
+
+            const logoutButton = document.getElementById('logoutButton');
+
+            // --- HÀM TRỢ GIÚP (Helpers) ---
+
+            // Định dạng tiền tệ
+            const formatCurrency = (amount) => {
+                if (typeof amount !== 'number') {
+                    amount = Number(amount) || 0;
+                }
+                return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+            };
+
+            // Định dạng ngày (API trả về YYYY-MM-DD)
+            const formatDate = (dateString) => {
+                if (!dateString) return '';
+                const parts = dateString.split('T')[0].split('-'); // Tách YYYY-MM-DD
+                if (parts.length === 3) {
+                    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+                }
+                return dateString;
+            };
+
+            // Hiển thị thông báo
+            const toastContainer = document.getElementById('toastContainer');
+            function showToast(message, type = 'success') {
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.textContent = message;
+                toastContainer.appendChild(toast);
+                setTimeout(() => toast.remove(), 3500);
+            }
+
+            // Hàm trợ giúp tạo headers
+            function getAuthHeaders(includeContentType = true) {
+                const headers = {
+                    'Authorization': `Bearer ${JWT_TOKEN}`,
+                };
+                if (includeContentType) {
+                    headers['Content-Type'] = 'application/json';
+                }
+                return headers;
+            }
+
+            // ===== BẮT ĐẦU SỬA LỖI TIMEZONE =====
+            // Hàm trợ giúp mới để xử lý lỗi timezone
+            // new Date("2025-11-16") sẽ bị coi là UTC (00:00:00Z)
+            // Hàm này ép nó thành ngày 16/11/2025 tại Múi giờ địa phương
+            function parseLocalDate(dateString) {
+                if (!dateString) return new Date();
+                const parts = dateString.split('T')[0].split('-');
+                if (parts.length === 3) {
+                    // new Date(Year, MonthIndex (0-11), Day)
+                    return new Date(parts[0], parts[1] - 1, parts[2]);
+                }
+                return new Date(dateString); // Fallback nếu định dạng sai
+            }
+            // --- QUẢN LÝ MODAL (HÀM TOÀN CỤC - SỬA LỖI SCOPE) ---
+
+            // Modal Giao dịch
+            const openTransactionModal = () => {
+                transactionForm.reset();
+                document.getElementById('transactionDate').value = new Date().toISOString().split('T')[0];
+                modal.classList.remove('hidden');
+            };
+            const closeTransactionModal = () => modal.classList.add('hidden');
+
+            // Modal Ngân sách
+            const openBudgetModal = (mode = 'add', budgetToEdit = null) => {
+                budgetForm.reset();
+                if (mode === 'edit' && budgetToEdit) {
+                    budgetModalTitle.textContent = 'Sửa Hạng mục Ngân sách';
+                    saveBudgetBtn.textContent = 'Cập nhật';
+                    budgetIdInput.value = budgetToEdit.id;
+                    budgetCategoryInput.value = budgetToEdit.category;
+                    budgetLimitInput.value = budgetToEdit.limit;
+                } else {
+                    budgetModalTitle.textContent = 'Thêm Hạng mục Ngân sách';
+                    saveBudgetBtn.textContent = 'Lưu';
+                    budgetIdInput.value = '';
+                }
+                budgetModal.classList.remove('hidden');
+            };
+            const closeBudgetModal = () => budgetModal.classList.add('hidden');
+
+            // Modal Mục tiêu
+            const openSavingsGoalModal = (mode = 'add', goalToEdit = null) => {
+                savingsGoalForm.reset();
+                if (mode === 'edit' && goalToEdit) {
+                    savingsGoalModalTitle.textContent = 'Sửa Mục tiêu';
+                    saveSavingsGoalBtn.textContent = 'Cập nhật';
+                    savingsGoalIdInput.value = goalToEdit.id;
+                    goalNameInput.value = goalToEdit.name;
+                    goalTargetInput.value = goalToEdit.target;
+                } else {
+                    savingsGoalModalTitle.textContent = 'Thêm Mục tiêu Mới';
+                    saveSavingsGoalBtn.textContent = 'Lưu';
+                    savingsGoalIdInput.value = '';
+                }
+                savingsGoalModal.classList.remove('hidden');
+            };
+            const closeSavingsGoalModal = () => savingsGoalModal.classList.add('hidden');
+
+            // Modal Thêm tiền
+            const openAddFundsModal = (goal) => {
+                addFundsForm.reset();
+                addFundsGoalIdInput.value = goal.id;
+                addFundsGoalName.textContent = goal.name;
+                addFundsModal.classList.remove('hidden');
+            };
+            const closeAddFundsModal = () => addFundsModal.classList.add('hidden');
+
+            // Modal Xác nhận Xóa
+            const openDeleteModal = (message, callback) => {
+                confirmDeleteText.textContent = message;
+                deleteCallback = callback;
+                confirmDeleteModal.classList.remove('hidden');
+            };
+            const closeDeleteModal = () => {
+                deleteCallback = null;
+                confirmDeleteModal.classList.add('hidden');
+            };
+
+
+            // --- KHỞI TẠO ---
+            function initializeApp() {
+                try {
+                    const dateElement = document.getElementById('currentDate');
+                    if (dateElement) {
+                        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                        dateElement.textContent = new Date().toLocaleDateString('vi-VN', options);
+                    }
+                } catch (e) { console.error("Lỗi cập nhật ngày:", e); }
+
+                initializeChart();
+                setupModalListeners(); // Gán sự kiện cho modal (bản đã sửa)
+                setupFormListeners();
+                setupListEventListeners();
+                setupPageNavigation();
+
+                logoutButton.addEventListener('click', () => {
+                    localStorage.removeItem('accessToken');
+                    localStorage.removeItem('userId');
+                    localStorage.removeItem('userEmail');
+                    showToast("Đã đăng xuất!", "success");
+                    window.location.href = './login.html';
+                });
+
+                // Logic Nút Thu Gọn
+                const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+                if (sidebarToggleBtn) {
+                    sidebarToggleBtn.addEventListener('click', () => {
+                        document.body.classList.toggle('sidebar-collapsed');
+                    });
+                }
+
+                loadInitialData();
+            }
+
+            function initializeChart() {
+                try {
+                    const ctx = document.getElementById('expenseChart');
+                    if (ctx) {
+                        expenseChart = new Chart(ctx.getContext('2d'), {
+                            type: 'doughnut',
+                            data: {
+                                labels: [],
+                                datasets: [{
+                                    label: 'Chi tiêu',
+                                    data: [],
+                                    backgroundColor: [
+                                        'rgba(239, 68, 68, 0.9)',   // Red
+                                        'rgba(59, 130, 246, 0.9)',   // Blue
+                                        'rgba(34, 197, 94, 0.9)',   // Green
+                                        'rgba(234, 179, 8, 0.9)',   // Yellow
+                                        'rgba(168, 85, 247, 0.9)',  // Purple
+                                        'rgba(249, 115, 22, 0.9)',  // Orange
+                                        'rgba(20, 184, 166, 0.9)',  // Teal
+                                        'rgba(236, 72, 153, 0.9)',  // Pink
+                                        'rgba(6, 182, 212, 0.9)',   // Cyan
+                                        'rgba(107, 114, 128, 0.9)', // Gray
+                                        'rgba(139, 92, 246, 0.9)',  // Violet
+                                        'rgba(74, 222, 128, 0.9)'   // Lime
+                                    ],
+                                    borderColor: '#fff',
+                                    borderWidth: 3,
+                                    hoverOffset: 10
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        position: 'bottom',
+                                        labels: { font: { size: 14, family: 'Inter, sans-serif' }, padding: 20, color: '#374151' }
+                                    }
+                                }
+                            }
+                        });
+                    }
+                } catch (e) { console.error("Lỗi khởi tạo biểu đồ:", e); }
+            }
+
+            async function loadInitialData() {
+                // Tải các dữ liệu hỗ trợ (dropdowns) trước
+                await loadAllMembers();
+                await loadAllBudgets();
+
+                // Tải dữ liệu chính (Giao dịch)
+                const initialData = await loadAllTransactions();
+
+                // Tải phần còn lại (CẦN goals ĐỂ updateDashboardStats)
+                await loadAllSavingsGoals();
+
+                // === BẮT ĐẦU SỬA LỖI ===
+                // Xóa dòng 'renderDashboard(initialData, false);' bị hỏng
+                // Thay thế bằng các lệnh gọi render chính xác:
+
+                // 1. Cập nhật các thẻ thống kê (cần cả transactions và goals)
+                // (Dòng này đã có trong loadAllSavingsGoals, nhưng gọi lại để đảm bảo)
+                updateDashboardStats(initialData, allSavingsGoals, false);
+
+                // 2. Cập nhật bảng Giao dịch Gần đây
+                renderTransactionsToTable(initialData);
+
+                // 3. Cập nhật biểu đồ Phân tích Chi tiêu
+                updateChartWithData(initialData);
+
+                // 4. Cập nhật lại thẻ Chi tiêu Con cái (với dữ liệu transactions)
+                updateDashboardChildSpending(allMembers, initialData, false);
+                // === KẾT THÚC SỬA LỖI ===
+            }
+
+            // --- TẢI DỮ LIỆU TỪ API ---
+            async function loadAllTransactions(startDate, endDate) {
+                try {
+                    // Xây dựng URL
+                    let url = `${API_BASE_URL}/transactions`;
+                    if (startDate && endDate) {
+                        url += `?startDate=${startDate}&endDate=${endDate}`;
+                    }
+
+                    const response = await fetch(url, {
+                        headers: getAuthHeaders(false)
+                    });
+
+                    if (response.status === 401) {
+                        showToast("Phiên đăng nhập hết hạn.", "error");
+                        window.location.href = './login.html';
+                        return []; // Trả về mảng rỗng
+                    }
+                    if (!response.ok) throw new Error('Không thể tải giao dịch');
+
+                    const data = await response.json();
+
+                    // Sắp xếp (để an toàn, dù backend đã sắp xếp)
+                    data.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                    allTransactions = data; // Cập nhật biến toàn cục
+
+                    return data; // Chỉ trả về dữ liệu, KHÔNG RENDER
+
+                } catch (err) {
+                    console.error("Lỗi tải giao dịch:", err);
+                    showToast(err.message, "error");
+                    return []; // Trả về mảng rỗng nếu lỗi
+                }
+            }
+
+            async function loadAllBudgets() {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/budgets`, {
+                        headers: getAuthHeaders(false)
+                    });
+                    if (!response.ok) throw new Error('Không thể tải ngân sách');
+                    allBudgets = await response.json();
+                    renderBudgetList(allBudgets);
+                    renderBudgetDropdown(allBudgets);
+                } catch (err) {
+                    console.error("Lỗi tải ngân sách:", err);
+                    showToast(err.message, "error");
+                }
+            }
+
+            async function loadAllSavingsGoals() {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/savings-goals`, {
+                        headers: getAuthHeaders(false)
+                    });
+                    if (!response.ok) throw new Error('Không thể tải mục tiêu');
+                    allSavingsGoals = await response.json();
+                    renderDashboardSavings(allSavingsGoals);
+                    renderSavingsGoalsPage(allSavingsGoals);
+                    updateDashboardStats(allTransactions, allSavingsGoals); // Cập nhật lại stats với goals
+                } catch (err) {
+                    console.error("Lỗi tải mục tiêu:", err);
+                    showToast(err.message, "error");
+                }
+            }
+
+            async function loadAllMembers() {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/members`, {
+                        headers: getAuthHeaders(false)
+                    });
+                    if (!response.ok) throw new Error('Không thể tải danh sách thành viên');
+                    allMembers = await response.json();
+
+                    renderMemberDropdown(allMembers);
+                    renderMemberSidebar(allMembers);
+                    updateDashboardChildSpending(allMembers); // Cập nhật thẻ chi tiêu con
+                } catch (err) {
+                    console.error("Lỗi tải thành viên:", err);
+                    showToast(err.message, "error");
+                    renderMemberDropdown([]);
+                    renderMemberSidebar([]);
+                }
+            }
+
+            // --- HÀM HIỂN THỊ (Render) ---
+            function renderBudgetDropdown(budgets) {
+                const budgetSelect = document.getElementById('category');
+                if (!budgetSelect) return;
+                budgetSelect.innerHTML = '';
+
+                if (budgets.length === 0) {
+                    budgetSelect.innerHTML = '<option value="">Chưa tạo ngân sách</option>';
+                    return;
+                }
+                budgets.forEach(budget => {
+                    const option = document.createElement('option');
+                    option.value = budget.id; // GIÁ TRỊ LÀ ID (Number)
+                    option.textContent = budget.category; // CHỮ HIỂN THỊ LÀ TÊN
+                    budgetSelect.appendChild(option);
+                });
+            }
+
+            function renderMemberSidebar(members) {
+                const memberNavList = document.getElementById('memberNavList');
+                if (!memberNavList) return;
+
+                memberNavList.innerHTML = ''; // Xóa
+
+                if (members.length === 0) {
+                    memberNavList.innerHTML = '<p class="text-blue-200 text-sm p-2">Không tải được</p>';
+                    return;
+                }
+
+                members.forEach((member, index) => {
+
+                    // --- BẮT ĐẦU SỬA ĐỔI ---
+
+                    // 1. Tạo một URL avatar mặc định (fallback)
+                    // Chúng ta dùng dịch vụ ui-avatars.com để tự động tạo avatar bằng chữ cái
+                    const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&background=3b82f6&color=fff&size=40&font-size=0.4`;
+
+                    // 2. Quyết định dùng URL thật (nếu backend gửi) hay URL mặc định
+                    //    Giả sử backend sẽ gửi trường "avatarUrl" trong tương lai.
+                    const avatarUrl = member.avatarUrl || defaultAvatar;
+
+                    // 3. Sửa lại template để dùng <img> thay vì <svg>
+                    const link = `
+                        <a href="#" data-page="memberDetailPage" data-member-id="${member.id}" data-member-name="${member.name}"
+                            class="nav-link member-nav-link flex items-center space-x-3 p-2 rounded-lg hover:bg-blue-600 transition-colors slide-in-left"
+                            style="animation-delay: ${400 + index * 100}ms">
+                            
+                            <img src="${avatarUrl}" 
+                                 alt="${member.name}" 
+                                 class="w-10 h-10 rounded-full object-cover flex-shrink-0 border-2 border-blue-300">
+                            
+                            <div class="sidebar-text">
+                                <p class="font-medium text-lg">${member.name}</p>
+                                <p class="text-xs text-blue-200">Chi tiết</p>
+                            </div>
+                        </a>`;
+
+                    // --- KẾT THÚC SỬA ĐỔI ---
+
+                    memberNavList.insertAdjacentHTML('beforeend', link);
+                });
+            }
+
+            function renderMemberDropdown(members) {
+                const memberSelect = document.getElementById('member');
+                if (!memberSelect) return;
+                memberSelect.innerHTML = '';
+                if (members.length === 0) {
+                    memberSelect.innerHTML = '<option value="">Lỗi: Không tải được</option>';
+                    return;
+                }
+                members.forEach(member => {
+                    const option = document.createElement('option');
+                    option.value = member.id; // Dùng ID (Number)
+                    option.textContent = member.name;
+                    memberSelect.appendChild(option);
+                });
+            }
+
+            function renderTransactionsToTable(transactions) {
+                if (!transactionsTableBody) return;
+                transactionsTableBody.innerHTML = '';
+
+                if (transactions.length === 0) {
+                    transactionsTableBody.innerHTML = `<tr><td colspan="4" class="text-center p-4 text-gray-500">Chưa có giao dịch nào.</td></tr>`;
+                    return;
+                }
+
+                // Hiển thị 10 giao dịch gần nhất
+                transactions.slice(0, 10).forEach(tx => {
+                    const isExpense = tx.type === 'expense';
+                    const amountClass = isExpense ? 'text-red-600' : 'text-green-600';
+                    const amountPrefix = isExpense ? '-' : '+';
+
+                    // Lấy tên thành viên từ allMembers
+                    // Cần xử lý trường hợp tx.member là object lồng {id, name}
+                    let memberName = 'N/A';
+                    if (tx.member) {
+                        if (typeof tx.member === 'object' && tx.member.name) {
+                            memberName = tx.member.name;
+                        } else if (typeof tx.member === 'number') {
+                            const foundMember = allMembers.find(m => m.id === tx.member);
+                            if (foundMember) memberName = foundMember.name;
+                        }
+                    } else if (tx.memberId) {
+                        const foundMember = allMembers.find(m => m.id === tx.memberId);
+                        if (foundMember) memberName = foundMember.name;
+                    }
+
+                    const categoryName = tx.budget ? tx.budget.category : 'N/A';
+
+                    const row = `
+                        <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors" data-id="${tx.id}">
+                            <td class="py-3">
+                                <p class="font-medium">${tx.description}</p>
+                                <p class="text-xs text-gray-400">${categoryName}</p>
+                            </td>
+                            <td class="py-3 text-sm">${memberName}</td>
+                            <td class="py-3 text-sm">${formatDate(tx.date)}</td>
+                            <td class="py-3 text-right font-semibold ${amountClass}">
+                                ${amountPrefix}${formatCurrency(tx.amount)}
+                            </td>
+                        </tr>
+                    `;
+                    transactionsTableBody.insertAdjacentHTML('beforeend', row);
+                });
+            }
+
+            function updateChartWithData(transactions) {
+                if (!expenseChart) return;
+                const expenses = transactions.filter(tx => tx.type === 'expense');
+                const expenseSummary = new Map();
+
+                expenses.forEach(tx => {
+                    const amount = parseFloat(tx.amount);
+
+                    // === BẮT ĐẦU SỬA LỖI ===
+                    // Lấy category từ object 'budget' lồng nhau
+                    const categoryName = tx.budget ? tx.budget.category : 'Chưa phân loại';
+                    // === KẾT THÚC SỬA LỖI ===
+
+                    expenseSummary.set(categoryName, (expenseSummary.get(categoryName) || 0) + amount);
+                });
+
+                expenseChart.data.labels = Array.from(expenseSummary.keys());
+                expenseChart.data.datasets[0].data = Array.from(expenseSummary.values());
+                expenseChart.update();
+            }
+
+            function updateDashboardStats(transactions, goals, isFiltered = false) {
+                if (!transactions) return;
+
+                const now = new Date();
+                const currentMonth = now.getMonth();
+                const currentYear = now.getFullYear();
+
+                // Cập nhật tiêu đề "Tháng này"
+                const monthName = new Intl.DateTimeFormat('vi-VN', { month: 'long' }).format(now);
+                const statMonthEl = document.getElementById('statMonth');
+                if (statMonthEl) {
+                    if (isFiltered) {
+                        statMonthEl.textContent = 'Trong khoảng đã lọc';
+                    } else {
+                        statMonthEl.textContent = `${monthName} ${currentYear}`;
+                    }
+                }
+
+                let totalIncome = 0;
+                let totalExpense = 0;
+
+                transactions.forEach(tx => {
+                    // ===== SỬA LỖI TIMEZONE =====
+                    const txDate = parseLocalDate(tx.date); // Dùng hàm mới
+                    // ============================
+
+                    let shouldInclude = false;
+
+                    if (isFiltered) {
+                        // Nếu đang lọc, backend đã lọc rồi,
+                        // chúng ta chỉ cần cộng tất cả
+                        shouldInclude = true;
+                    } else {
+                        // Nếu không lọc (mặc định), chỉ tính tháng hiện tại
+                        if (txDate.getMonth() === currentMonth && txDate.getFullYear() === currentYear) {
+                            shouldInclude = true;
+                        }
+                    }
+
+                    if (shouldInclude) {
+                        const amount = parseFloat(tx.amount);
+                        if (tx.type === 'income') {
+                            totalIncome += amount;
+                        } else {
+                            totalExpense += amount;
+                        }
+                    }
+                });
+
+                const totalSavings = totalIncome - totalExpense;
+                const expensePercentage = totalIncome > 0 ? (totalExpense / totalIncome) * 100 : 0;
+
+                document.getElementById('statTotalIncome').textContent = formatCurrency(totalIncome);
+                document.getElementById('statTotalExpense').textContent = formatCurrency(totalExpense);
+                document.getElementById('statTotalSavings').textContent = formatCurrency(totalSavings);
+                document.getElementById('statExpensePercentage').textContent = `Đã chi ${expensePercentage.toFixed(0)}%`;
+
+                // Cập nhật từ savingsGoals nếu có
+                if (goals && goals.length > 0) {
+                    const totalGoalsSaved = goals.reduce((sum, goal) => sum + parseFloat(goal.saved), 0);
+                    document.getElementById('statSavingGoals').textContent = formatCurrency(totalGoalsSaved);
+                } else {
+                    document.getElementById('statSavingGoals').textContent = formatCurrency(0);
+                }
+            }
+
+            // Hàm mới: Cập nhật thẻ Chi tiêu Con cái
+            function updateDashboardChildSpending(members, transactions, isFiltered = false) {
+                const container = document.getElementById('dashboardChildSpending');
+                if (!container) return;
+
+                container.innerHTML = ''; // Xóa
+                let totalChildExpense = 0;
+
+                const now = new Date();
+                const currentMonth = now.getMonth();
+                const currentYear = now.getFullYear();
+
+                // Giả định thành viên con là 2 người cuối
+                const children = members.slice(-2);
+
+                children.forEach((child, index) => {
+                    let childExpense = 0;
+                    if (transactions && transactions.length > 0) {
+                        transactions.forEach(tx => {
+                            // ===== SỬA LỖI TIMEZONE =====
+                            const txDate = parseLocalDate(tx.date); // Dùng hàm mới
+                            // ============================
+
+                            let shouldInclude = false;
+                            if (isFiltered) {
+                                shouldInclude = true; // Đã được lọc bởi backend
+                            } else {
+                                // Mặc định, chỉ tính tháng hiện tại
+                                if (txDate.getMonth() === currentMonth && txDate.getFullYear() === currentYear) {
+                                    shouldInclude = true;
+                                }
+                            }
+
+                            // Lọc theo tháng VÀ ID thành viên
+                            if (tx.type === 'expense' && shouldInclude) {
+                                if (tx.memberId === child.id || (tx.member && tx.member.id === child.id)) {
+                                    childExpense += parseFloat(tx.amount);
+                                }
+                            }
+                        });
+                    }
+                    totalChildExpense += childExpense;
+
+                    // === BẮT ĐẦU BỔ SUNG LOGIC AVATAR ===
+
+                    // 1. Tạo avatar mặc định (fallback) với màu tím của widget này
+                    const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(child.name)}&background=a78bfa&color=fff&size=48&font-size=0.4`;
+
+                    // 2. Quyết định dùng avatar thật (từ API) hay avatar mặc định
+                    const avatarUrl = child.avatarUrl || defaultAvatar;
+
+                    // === KẾT THÚC BỔ SUNG ===
+
+                    const itemHtml = `
+                    <div class="flex items-center justify-between ${index > 0 ? 'border-t border-gray-100 pt-5' : ''}">
+                        <div class="flex items-center space-x-3">
+                            <img 
+                                src="${avatarUrl}" 
+                                 alt="${child.name}" 
+                                 class="w-12 h-12 rounded-full object-cover flex-shrink-0 border-2 border-purple-200">
+                            <div>
+                                <h4 class="font-semibold text-gray-700">${child.name}</h4>
+                                <p class="text-sm text-gray-500">Chi tiêu (${isFiltered ? 'đã lọc' : 'tháng này'})</p>
+                            </div>
+                        </div>
+                        <p class="font-bold text-xl text-purple-600">${formatCurrency(childExpense)}</p>
+                    </div>
+                `;
+                    container.insertAdjacentHTML('beforeend', itemHtml);
+                });
+
+                // Thêm tổng
+                const totalHtml = `
+                <div class="border-t border-gray-100 pt-5 flex items-center justify-between">
+                    <h4 class="font-bold text-xl text-gray-700">Tổng cộng</h4>
+                    <p class="font-extrabold text-2xl text-blue-700">${formatCurrency(totalChildExpense)}</p>
+                </div>
+            `;
+                container.insertAdjacentHTML('beforeend', totalHtml);
+            }
+
+
+            function renderBudgetList(budgets) {
+                if (!budgetListContainer) return;
+                budgetListContainer.innerHTML = '';
+                if (budgets.length === 0) {
+                    budgetListContainer.innerHTML = '<p class="text-gray-500 text-center">Chưa có hạng mục ngân sách nào.</p>';
+                    return;
+                }
+                budgets.forEach(budget => {
+                    const spent = parseFloat(budget.spent);
+                    const limit = parseFloat(budget.limit);
+                    const percentage = limit > 0 ? (spent / limit) * 100 : 0;
+                    let barColor = 'bg-green-500', warningText = '';
+                    if (percentage >= 100) {
+                        barColor = 'bg-red-500';
+                        warningText = `<p class="text-xs text-red-600 font-semibold mt-1">Đã vượt ngân sách ${formatCurrency(spent - limit)}!</p>`;
+                    } else if (percentage >= 90) {
+                        barColor = 'bg-yellow-500';
+                        warningText = `<p class="text-xs text-yellow-600 mt-1">Sắp vượt ngân sách!</p>`;
+                    }
+                    const itemHtml = `
+                        <div class="p-4 rounded-lg border border-gray-200 hover:shadow-md transition-shadow" data-id="${budget.id}">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="font-medium text-gray-700">${budget.category}</span>
+                                <div class="flex items-center space-x-3">
+                                    
+                                    <span class="text-sm text-gray-500">${formatCurrency(spent)} / ${formatCurrency(limit)}</span>
+                                    
+                                    <button class="edit-budget-btn text-blue-600 hover:text-blue-800" title="Sửa">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" /></svg>
+                                    </button>
+                                    <button class="delete-budget-btn text-red-600 hover:text-red-800" title="Xóa">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" /></svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="relative w-full bg-gray-200 rounded-full h-4">
+                                <div class="${barColor} h-4 rounded-full progress-bar-fill" style="width: ${Math.min(percentage, 100)}%"></div>
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <span class="text-xs font-bold ${percentage > 50 ? 'text-white' : 'text-gray-800'}">${percentage.toFixed(0)}%</span>
+                                </div>
+                            </div>
+                            ${warningText}
+                        </div>
+                    `;
+                    budgetListContainer.insertAdjacentHTML('beforeend', itemHtml);
+                });
+            }
+
+            const goalIcons = {
+                education: `<svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 14l9-5-9-5-9 5 9 5z" /><path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5z" /></svg>`,
+                travel: `<svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" /></svg>`,
+                shield: `<svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>`,
+                default: `<svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>`
+            };
+
+            function renderDashboardSavings(goals) {
+                if (!dashboardSavingsContainer) return;
+                dashboardSavingsContainer.innerHTML = '';
+                if (goals.length === 0) {
+                    dashboardSavingsContainer.innerHTML = '<p class="text-gray-500">Chưa có mục tiêu nào.</p>';
+                    return;
+                }
+                goals.slice(0, 3).forEach(goal => {
+                    const saved = parseFloat(goal.saved);
+                    const target = parseFloat(goal.target);
+                    const percentage = target > 0 ? (saved / target) * 100 : 0;
+                    const icon = goalIcons[goal.icon] || goalIcons.default;
+                    let barColor = 'bg-blue-600';
+                    if (goal.icon === 'travel') barColor = 'bg-green-500';
+                    if (goal.icon === 'shield') barColor = 'bg-red-500';
+
+                    const itemHtml = `
+                        <div class="flex items-center space-x-4">
+                            ${icon}
+                            <div class="flex-1">
+                                <div class="flex justify-between mb-1">
+                                    <span class="font-medium text-gray-700">${goal.name}</span>
+                                    <span class="text-sm text-gray-500">${formatCurrency(saved)} / ${formatCurrency(target)}</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-3">
+                                    <div class="${barColor} h-3 rounded-full progress-bar-fill" style="width: ${percentage}%"></div>
+                                </div>
+                            </div>
+                        </div>`;
+                    dashboardSavingsContainer.insertAdjacentHTML('beforeend', itemHtml);
+                });
+            }
+
+            function renderSavingsGoalsPage(goals) {
+                if (!savingsGoalListContainer) return;
+                savingsGoalListContainer.innerHTML = '';
+                if (goals.length === 0) {
+                    savingsGoalListContainer.innerHTML = '<p class="text-gray-500 md:col-span-2 lg:col-span-3 text-center">Chưa có mục tiêu nào.</p>';
+                    return;
+                }
+                goals.forEach(goal => {
+                    const saved = parseFloat(goal.saved);
+                    const target = parseFloat(goal.target);
+                    const percentage = target > 0 ? (saved / target) * 100 : 0;
+                    const icon = goalIcons[goal.icon] || goalIcons.default;
+                    let barColor = 'bg-blue-600';
+                    if (goal.icon === 'travel') barColor = 'bg-green-500';
+                    if (goal.icon === 'shield') barColor = 'bg-red-500';
+                    if (percentage >= 100) barColor = 'bg-yellow-400';
+
+                    const itemHtml = `
+                        <div class="bg-white p-6 rounded-xl shadow-md flex flex-col justify-between space-y-4" data-id="${goal.id}">
+                            <div>
+                                <div class="flex items-start space-x-4 mb-4">
+                                    ${icon.replace('w-12 h-12', 'w-10 h-10')}
+                                    <h4 class="text-lg font-bold text-gray-800">${goal.name}</h4>
+                                </div>
+                                <div class="mb-2">
+                                    <div class="flex justify-between text-sm mb-1">
+                                        <span class="font-medium text-gray-600">Đã tiết kiệm</span>
+                                        <span class="font-bold text-gray-800">${formatCurrency(saved)}</span>
+                                    </div>
+                                    <div class="flex justify-between text-sm text-gray-500">
+                                        <span>Mục tiêu</span>
+                                        <span>${formatCurrency(target)}</span>
+                                    </div>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-3">
+                                    <div class="${barColor} h-3 rounded-full progress-bar-fill" style="width: ${Math.min(percentage, 100)}%"></div>
+                                </div>
+                            </div>
+                            <div class="flex flex-col sm:flex-row gap-2">
+                                <button class="add-funds-btn flex-1 bg-green-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-600 transition-colors text-sm shadow-md">
+                                    Thêm tiền
+                                </button>
+                                <div class="flex gap-2">
+                                    <button class="edit-goal-btn flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium">
+                                        Sửa
+                                    </button>
+                                    <button class="delete-goal-btn flex-1 bg-gray-100 text-red-600 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium">
+                                        Xóa
+                                    </button>
+                                </div>
+                            </div>
+                        </div>`;
+                    savingsGoalListContainer.insertAdjacentHTML('beforeend', itemHtml);
+                });
+            }
+
+            // Hàm này (bản mới) chỉ gán sự kiện, không định nghĩa hàm
+            function setupModalListeners() {
+                openModalBtns.forEach(btn => btn.addEventListener('click', openTransactionModal));
+                closeModalBtn.addEventListener('click', closeTransactionModal);
+                modal.addEventListener('click', (e) => e.target === modal && closeTransactionModal());
+
+                openBudgetModalBtn.addEventListener('click', () => openBudgetModal('add'));
+                closeBudgetModalBtn.addEventListener('click', closeBudgetModal);
+                budgetModal.addEventListener('click', (e) => e.target === budgetModal && closeBudgetModal());
+
+                openSavingsGoalModalBtn.addEventListener('click', () => openSavingsGoalModal('add'));
+                closeSavingsGoalModalBtn.addEventListener('click', closeSavingsGoalModal);
+                savingsGoalModal.addEventListener('click', (e) => e.target === savingsGoalModal && closeSavingsGoalModal());
+
+                closeAddFundsModalBtn.addEventListener('click', closeAddFundsModal);
+                addFundsModal.addEventListener('click', (e) => e.target === addFundsModal && closeAddFundsModal());
+
+                cancelDeleteBtn.addEventListener('click', closeDeleteModal);
+                confirmDeleteModal.addEventListener('click', (e) => e.target === confirmDeleteModal && closeDeleteModal());
+                confirmDeleteBtn.addEventListener('click', () => {
+                    if (deleteCallback) {
+                        deleteCallback();
+                    }
+                    closeDeleteModal();
+                });
+            }
+
+            /**
+             * Hàm xử lý Thêm Giao dịch MỚI (tái sử dụng)
+             * @param {boolean} closeModalOnSuccess - Đóng modal nếu thành công?
+             */
+            async function handleAddTransaction(closeModalOnSuccess = true) {
+                // 1. Lấy dữ liệu
+                const formData = new FormData(transactionForm);
+                const data = {
+                    type: formData.get('type'),
+                    description: formData.get('description'),
+                    amount: parseFloat(formData.get('amount')),
+                    // category: formData.get('category'),
+                    budgetId: Number(formData.get('budgetId')), // <-- THÊM DÒNG NÀY
+                    memberId: Number(formData.get('member')),
+                    date: formData.get('transactionDate'),
+                };
+
+                // 2. Validation (Đơn giản)
+                if (!data.description || !data.amount || !data.date || !data.memberId || !data.budgetId) {
+                    showToast("Vui lòng điền đầy đủ thông tin.", "error");
+                    return;
+                }
+
+                // 3. Gọi API
+                try {
+                    const response = await fetch(`${API_BASE_URL}/transactions`, {
+                        method: 'POST',
+                        headers: getAuthHeaders(true),
+                        body: JSON.stringify(data),
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        const errorMsg = Array.isArray(error.message) ? error.message.join(', ') : (error.message || 'Lỗi máy chủ');
+                        throw new Error(errorMsg);
+                    }
+
+                    showToast("Đã thêm giao dịch!");
+
+                    // 4. Tải lại dữ liệu nền (không cần await để UI mượt hơn)
+                    loadInitialData(); // Gọi hàm load ban đầu để cập nhật tất cả
+
+                    // 5. Xử lý UI
+                    if (closeModalOnSuccess) {
+                        // Nút "Thêm": Đóng modal
+                        closeTransactionModal();
+                    } else {
+                        // Nút "Thêm & Tiếp": Xóa Mô tả, Số tiền và focus lại
+                        document.getElementById('description').value = '';
+                        document.getElementById('amount').value = '';
+                        document.getElementById('description').focus();
+                        // (Chúng ta giữ lại Ngày, Loại, Danh mục và Thành viên)
+                    }
+
+                } catch (err) {
+                    showToast(err.message, "error");
+                }
+            }
+
+            // --- XỬ LÝ FORM SUBMIT (Sửa lỗi 3) ---
+            function setupFormListeners() {
+                // Form Giao dịch
+                // 1. Nút "Thêm" (Lưu & Đóng)
+                saveTransactionBtn.addEventListener('click', () => {
+                    handleAddTransaction(true); // true = Thêm & Đóng
+                });
+
+                // 2. Nút "Thêm & Tiếp" (Lưu & Giữ lại)
+                saveAndContinueBtn.addEventListener('click', () => {
+                    handleAddTransaction(false); // false = Thêm & Tiếp
+                });
+
+                // Form Ngân sách
+                budgetForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const rawId = budgetIdInput.value;
+                    const id = rawId ? Number(rawId) : null;
+                    const data = {
+                        category: budgetCategoryInput.value,
+                        limit: parseFloat(budgetLimitInput.value),
+                    };
+                    const url = id ? `${API_BASE_URL}/budgets/${id}` : `${API_BASE_URL}/budgets`;
+                    const method = id ? 'PATCH' : 'POST';
+                    try {
+                        const response = await fetch(url, {
+                            method: method,
+                            headers: getAuthHeaders(true),
+                            body: JSON.stringify(data),
+                        });
+                        if (!response.ok) {
+                            const error = await response.json();
+                            const errorMsg = Array.isArray(error.message) ? error.message.join(', ') : 'Lỗi máy chủ';
+                            throw new Error(errorMsg);
+                        }
+                        showToast(id ? "Đã cập nhật ngân sách!" : "Đã thêm ngân sách!");
+                        closeBudgetModal();
+                        await loadAllBudgets(); // Tải lại
+                    } catch (err) {
+                        showToast(err.message, "error");
+                    }
+                });
+
+                // Form Mục tiêu
+                savingsGoalForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const rawId = savingsGoalIdInput.value;
+                    const id = rawId ? Number(rawId) : null;
+                    const data = {
+                        name: goalNameInput.value,
+                        target: parseFloat(goalTargetInput.value),
+                        icon: 'default' // Tạm thời
+                    };
+                    const url = id ? `${API_BASE_URL}/savings-goals/${id}` : `${API_BASE_URL}/savings-goals`;
+                    const method = id ? 'PATCH' : 'POST';
+                    try {
+                        const response = await fetch(url, {
+                            method: method,
+                            headers: getAuthHeaders(true),
+                            body: JSON.stringify(data),
+                        });
+                        if (!response.ok) {
+                            const error = await response.json();
+                            const errorMsg = Array.isArray(error.message) ? error.message.join(', ') : 'Lỗi máy chủ';
+                            throw new Error(errorMsg);
+                        }
+                        showToast(id ? "Đã cập nhật mục tiêu!" : "Đã thêm mục tiêu!");
+                        closeSavingsGoalModal();
+                        await loadAllSavingsGoals(); // Tải lại
+                    } catch (err) {
+                        showToast(err.message, "error");
+                    }
+                });
+
+                // Form Thêm tiền
+                addFundsForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const id = Number(addFundsGoalIdInput.value);
+                    const amount = parseFloat(fundsAmountInput.value);
+                    try {
+                        const response = await fetch(`${API_BASE_URL}/savings-goals/${id}/add-funds`, {
+                            method: 'POST',
+                            headers: getAuthHeaders(true),
+                            body: JSON.stringify({ amount: amount }),
+                        });
+                        if (!response.ok) {
+                            const error = await response.json();
+                            const errorMsg = Array.isArray(error.message) ? error.message.join(', ') : 'Lỗi máy chủ';
+                            throw new Error(errorMsg);
+                        }
+                        showToast(`Đã thêm ${formatCurrency(amount)} vào mục tiêu!`);
+                        closeAddFundsModal();
+                        await loadAllSavingsGoals(); // Tải lại
+                    } catch (err) {
+                        showToast(err.message, "error");
+                    }
+                });
+            }
+
+            // --- XỬ LÝ SỬA/XÓA (Sửa lỗi 3 & 4) ---
+            function setupListEventListeners() {
+                // 1. Trang Ngân sách
+                budgetListContainer.addEventListener('click', (e) => {
+                    const editBtn = e.target.closest('.edit-budget-btn');
+                    const deleteBtn = e.target.closest('.delete-budget-btn');
+                    const budgetItemEl = e.target.closest('[data-id]');
+                    if (!budgetItemEl) return;
+                    const budgetId = Number(budgetItemEl.dataset.id);
+                    if (editBtn) {
+                        const budgetToEdit = allBudgets.find(b => b.id === budgetId);
+                        if (budgetToEdit) {
+                            openBudgetModal('edit', budgetToEdit);
+                        }
+                    }
+                    if (deleteBtn) {
+                        openDeleteModal(
+                            'Bạn có chắc chắn muốn xóa hạng mục ngân sách này?',
+                            () => deleteBudget(budgetId)
+                        );
+                    }
+                });
+
+                // 2. Trang Mục tiêu
+                savingsGoalListContainer.addEventListener('click', (e) => {
+                    const goalItemEl = e.target.closest('[data-id]');
+                    if (!goalItemEl) return;
+                    const goalId = Number(goalItemEl.dataset.id);
+                    const goal = allSavingsGoals.find(g => g.id === goalId);
+                    if (!goal) return;
+                    if (e.target.closest('.edit-goal-btn')) {
+                        openSavingsGoalModal('edit', goal);
+                    }
+                    if (e.target.closest('.delete-goal-btn')) {
+                        openDeleteModal(
+                            `Bạn có chắc chắn muốn xóa mục tiêu "${goal.name}"?`,
+                            () => deleteSavingsGoal(goalId)
+                        );
+                    }
+                    if (e.target.closest('.add-funds-btn')) {
+                        openAddFundsModal(goal);
+                    }
+                });
+            }
+
+            // Hàm gọi API xóa
+            async function deleteBudget(id) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/budgets/${id}`, {
+                        method: 'DELETE',
+                        headers: getAuthHeaders(false)
+                    });
+                    if (!response.ok) throw new Error('Không thể xóa ngân sách');
+                    showToast("Đã xóa hạng mục ngân sách.", "success");
+                    await loadAllBudgets();
+                } catch (err) {
+                    showToast(err.message, "error");
+                }
+            }
+
+            async function deleteSavingsGoal(id) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/savings-goals/${id}`, {
+                        method: 'DELETE',
+                        headers: getAuthHeaders(false)
+                    });
+                    if (!response.ok) throw new Error('Không thể xóa mục tiêu');
+                    showToast("Đã xóa mục tiêu.", "success");
+                    await loadAllSavingsGoals();
+                } catch (err) {
+                    showToast(err.message, "error");
+                }
+            }
+
+
+            // --- ĐIỀU HƯỚNG TRANG (Đã sửa lỗi) ---
+            function setupPageNavigation() {
+                const dashboardPage = document.getElementById('dashboardPage');
+                const detailPages = document.querySelectorAll('.member-detail-page');
+                const dashboardLink = document.getElementById('dashboardLink');
+                const sidebar = document.getElementById('sidebar'); // Chọn sidebar bằng ID
+
+                function showPage(pageId) {
+                    if (dashboardPage) dashboardPage.classList.add('hidden');
+                    detailPages.forEach(page => page.classList.add('hidden'));
+                    const targetPage = document.getElementById(pageId);
+                    if (targetPage) {
+                        targetPage.classList.remove('hidden');
+                        targetPage.querySelectorAll('.fade-in, .slide-in-left, .slide-in-right').forEach(el => {
+                            el.style.animation = 'none';
+                            void el.offsetWidth;
+                            el.style.animation = null;
+                        });
+                    }
+                }
+
+                sidebar.addEventListener('click', (e) => {
+                    const link = e.target.closest('.nav-link');
+                    if (!link || link.classList.contains('cursor-not-allowed') || link.id === 'sidebarToggleBtn') return;
+
+                    e.preventDefault();
+                    document.querySelectorAll('.nav-link').forEach(nav => {
+                        // Chỉ xóa highlight khỏi các link điều hướng, không phải nút toggle/logout/add
+                        if (nav.getAttribute('data-page')) {
+                            nav.classList.remove('bg-blue-600');
+                        }
+                    });
+
+                    if (link.getAttribute('data-page')) {
+                        link.classList.add('bg-blue-600');
+                    }
+
+                    const pageId = link.getAttribute('data-page');
+                    if (pageId) {
+                        showPage(pageId);
+                        if (pageId === 'memberDetailPage') {
+                            const memberId = Number(link.getAttribute('data-member-id'));
+                            const memberName = link.getAttribute('data-member-name');
+                            loadMemberDetails(memberId, memberName);
+                        } else if (pageId === 'budgetPage') {
+                            loadAllBudgets();
+                        } else if (pageId === 'savingsGoalsPage') {
+                            loadAllSavingsGoals();
+                        }
+                    }
+                });
+
+                document.querySelectorAll('.back-to-dashboard').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        document.querySelectorAll('.nav-link').forEach(nav => {
+                            if (nav.getAttribute('data-page')) {
+                                nav.classList.remove('bg-blue-600');
+                            }
+                        });
+                        if (dashboardLink) dashboardLink.classList.add('bg-blue-600');
+                        showPage('dashboardPage');
+                        loadInitialData();
+                    });
+                });
+            }
+
+            // Hàm này lọc và hiển thị chi tiết cho một thành viên
+            function loadMemberDetails(memberId, memberName) {
+                const memberDetailName = document.getElementById('memberDetailName');
+                if (memberDetailName) memberDetailName.textContent = `Chi tiết ${memberName}`;
+
+                if (!allTransactions || allTransactions.length === 0) {
+                    showToast("Chưa có dữ liệu giao dịch.", "error");
+                    const tableBody = document.getElementById('memberDetailTransactionBody');
+                    if (tableBody) {
+                        tableBody.innerHTML = `<tr><td colspan="3" class="text-center p-4 text-gray-500">Không có dữ liệu giao dịch.</td></tr>`;
+                    }
+                    document.getElementById('memberStatIncome').textContent = formatCurrency(0);
+                    document.getElementById('memberStatExpense').textContent = formatCurrency(0);
+                    return;
+                }
+
+                // Lọc giao dịch (Sửa lỗi)
+                const memberTransactions = allTransactions.filter(tx => {
+                    if (tx.memberId === memberId) return true;
+                    if (tx.member && tx.member.id === memberId) return true;
+                    return false;
+                });
+
+                // Tính toán Thống kê (tháng hiện tại)
+                const now = new Date();
+                const currentMonth = now.getMonth();
+                const currentYear = now.getFullYear();
+                let memberIncome = 0;
+                let memberExpense = 0;
+
+                memberTransactions.forEach(tx => {
+                    // ===== SỬA LỖI TIMEZONE =====
+                    const txDate = parseLocalDate(tx.date); // Dùng hàm mới
+                    // ============================
+
+                    if (txDate.getMonth() === currentMonth && txDate.getFullYear() === currentYear) {
+                        const amount = parseFloat(tx.amount);
+                        if (tx.type === 'income') {
+                            memberIncome += amount;
+                        } else {
+                            memberExpense += amount;
+                        }
+                    }
+                });
+
+                // Hiển thị Thống kê
+                document.getElementById('memberStatIncome').textContent = formatCurrency(memberIncome);
+                document.getElementById('memberStatExpense').textContent = formatCurrency(memberExpense);
+
+                // Hiển thị Bảng giao dịch
+                const tableBody = document.getElementById('memberDetailTransactionBody');
+                if (!tableBody) return;
+                tableBody.innerHTML = '';
+                if (memberTransactions.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="3" class="text-center p-4 text-gray-500">Thành viên này chưa có giao dịch.</td></tr>`;
+                    return;
+                }
+
+                memberTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+                memberTransactions.forEach(tx => {
+                    const isExpense = tx.type === 'expense';
+                    const amountClass = isExpense ? 'text-red-600' : 'text-green-600';
+                    const amountPrefix = isExpense ? '-' : '+';
+
+                    const categoryName = tx.budget ? tx.budget.category : 'N/A';
+
+                    const row = `
+                    <tr class="border-b border-gray-100 hover:bg-gray-50">
+                        <td class="py-3">
+                            <p class="font-medium">${tx.description}</p>
+                            <p class="text-xs text-gray-400">${categoryName}</p>
+                        </td>
+                        <td class="py-3 text-sm">${formatDate(tx.date)}</td>
+                        <td class="py-3 text-right font-semibold ${amountClass}">
+                            ${amountPrefix}${formatCurrency(tx.amount)}
+                        </td>
+                    </tr>
+                `;
+                    tableBody.insertAdjacentHTML('beforeend', row);
+                });
+            }
+
+            // --- CHẠY ỨNG DỤNG ---
+            initializeApp();
+
+        });
+    </script>
+</body>
+
+</html>

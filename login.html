@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập - Tài chính Gia đình</title>
+    <!-- Tải Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Custom styles cho tab active/inactive */
+        .tab-btn {
+            @apply w-1/2 py-3 text-center font-semibold text-gray-500 cursor-pointer border-b-2 border-transparent transition-colors;
+        }
+
+        .tab-btn.active {
+            @apply text-blue-600 border-blue-600;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Loading spinner */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+        <!-- Header -->
+        <div class="bg-gradient-to-br from-blue-700 to-blue-900 p-8 text-center">
+            <h1 class="text-3xl font-bold text-white">Chào mừng!</h1>
+            <p class="text-blue-200 mt-2">Quản lý tài chính gia đình của bạn.</p>
+        </div>
+
+        <div class="p-8">
+            <!-- Tab chuyển đổi -->
+            <div class="flex justify-center space-x-8 mb-8">
+                <button id="loginTabBtn" data-tab="loginForm"
+                    class="tab-btn-new text-xl font-semibold text-blue-600 border-b-2 border-blue-600 pb-2 transition-colors">
+                    Đăng nhập
+                </button>
+                <button id="registerTabBtn" data-tab="registerForm"
+                    class="tab-btn-new text-xl font-semibold text-gray-400 border-b-2 border-transparent hover:text-green-600 pb-2 transition-colors">
+                    Đăng ký
+                </button>
+            </div>
+            <!-- Form Đăng nhập -->
+            <form id="loginForm" class="tab-content active space-y-5">
+                <div>
+                    <label for="loginEmail" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" id="loginEmail" name="email" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                        placeholder="email@example.com">
+                </div>
+                <div>
+                    <label for="loginPassword" class="block text-sm font-medium text-gray-700 mb-1">Mật khẩu</label>
+                    <input type="password" id="loginPassword" name="password" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                        placeholder="••••••••">
+                </div>
+                <!-- Vùng hiển thị lỗi -->
+                <div id="loginError" class="text-red-600 text-sm text-center h-5"></div>
+                <button type="submit" id="loginSubmitBtn"
+                    class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition duration-300 shadow-lg flex items-center justify-center space-x-2">
+                    <span id="loginSubmitText">Đăng nhập</span>
+                    <div id="loginSpinner" class="spinner hidden"></div>
+                </button>
+            </form>
+
+            <!-- Form Đăng ký -->
+            <form id="registerForm" class="tab-content space-y-5">
+                <div>
+                    <label for="registerEmail" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" id="registerEmail" name="email" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                        placeholder="email@example.com">
+                </div>
+                <div>
+                    <label for="registerPassword" class="block text-sm font-medium text-gray-700 mb-1">Mật khẩu</label>
+                    <input type="password" id="registerPassword" name="password" required minlength="6"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                        placeholder="Tối thiểu 6 ký tự">
+                </div>
+                <div>
+                    <label for="registerConfirmPassword" class="block text-sm font-medium text-gray-700 mb-1">Xác nhận
+                        Mật khẩu</label>
+                    <input type="password" id="registerConfirmPassword" name="confirmPassword" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                        placeholder="Nhập lại mật khẩu">
+                </div>
+                <!-- Vùng hiển thị lỗi -->
+                <div id="registerError" class="text-red-600 text-sm text-center h-5"></div>
+                <button type="submit" id="registerSubmitBtn"
+                    class="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition duration-300 shadow-lg flex items-center justify-center space-x-2">
+                    <span id="registerSubmitText">Tạo tài khoản</span>
+                    <div id="registerSpinner" class="spinner hidden"></div>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const API_BASE_URL = 'http://localhost:3000';
+
+            // --- Chuyển tab ---
+            const loginTabBtn = document.getElementById('loginTabBtn');
+            const registerTabBtn = document.getElementById('registerTabBtn');
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const loginError = document.getElementById('loginError');
+            const registerError = document.getElementById('registerError');
+
+            // ##### CẬP NHẬT: Logic chuyển Tab #####
+            loginTabBtn.addEventListener('click', () => {
+                // Cập nhật giao diện Tab
+                loginTabBtn.className = "tab-btn-new text-xl font-semibold text-blue-600 border-b-2 border-blue-600 pb-2 transition-colors";
+                registerTabBtn.className = "tab-btn-new text-xl font-semibold text-gray-400 border-b-2 border-transparent hover:text-green-600 pb-2 transition-colors";
+
+                loginForm.classList.add('active');
+                registerForm.classList.remove('active');
+                registerError.textContent = ''; // Xóa lỗi
+            });
+
+            registerTabBtn.addEventListener('click', () => {
+                // Cập nhật giao diện Tab
+                loginTabBtn.className = "tab-btn-new text-xl font-semibold text-gray-400 border-b-2 border-transparent hover:text-blue-600 pb-2 transition-colors";
+                registerTabBtn.className = "tab-btn-new text-xl font-semibold text-green-600 border-b-2 border-green-600 pb-2 transition-colors";
+
+                registerForm.classList.add('active');
+                loginForm.classList.remove('active');
+                loginError.textContent = ''; // Xóa lỗi
+            });
+
+            // --- Lấy phần tử UI (Nút, Spinner, Text) ---
+            const loginSubmitBtn = document.getElementById('loginSubmitBtn');
+            const loginSubmitText = document.getElementById('loginSubmitText');
+            const loginSpinner = document.getElementById('loginSpinner');
+
+            const registerSubmitBtn = document.getElementById('registerSubmitBtn');
+            const registerSubmitText = document.getElementById('registerSubmitText');
+            const registerSpinner = document.getElementById('registerSpinner');
+
+            // --- Hàm xử lý API ---
+            async function handleApiCall(endpoint, data, button, textEl, spinnerEl, errorEl) {
+                // Hiển thị loading
+                button.disabled = true;
+                textEl.classList.add('hidden');
+                spinnerEl.classList.remove('hidden');
+                errorEl.textContent = '';
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data),
+                    });
+
+                    const result = await response.json();
+
+                    if (!response.ok) {
+                        // Hiển thị lỗi từ backend
+                        const errorMessage = Array.isArray(result.message) ? result.message.join(', ') : (result.message || 'Đã xảy ra lỗi');
+                        throw new Error(errorMessage);
+                    }
+
+                    // Thành công!
+                    localStorage.setItem('accessToken', result.access_token);
+                    localStorage.setItem('userId', result.userId);
+                    localStorage.setItem('userEmail', result.email);
+
+                    // Chuyển hướng đến trang dashboard
+                    window.location.href = './index.html';
+
+                } catch (error) {
+                    errorEl.textContent = error.message;
+                    // Tắt loading
+                    button.disabled = false;
+                    textEl.classList.remove('hidden');
+                    spinnerEl.classList.add('hidden');
+                }
+            }
+
+            // --- Xử lý Đăng nhập ---
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = document.getElementById('loginEmail').value;
+                const password = document.getElementById('loginPassword').value;
+
+                handleApiCall(
+                    '/auth/login',
+                    { email, password },
+                    loginSubmitBtn,
+                    loginSubmitText,
+                    loginSpinner,
+                    loginError
+                );
+            });
+
+            // --- Xử lý Đăng ký ---
+            registerForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = document.getElementById('registerEmail').value;
+                const password = document.getElementById('registerPassword').value;
+                const confirmPassword = document.getElementById('registerConfirmPassword').value;
+
+                if (password !== confirmPassword) {
+                    registerError.textContent = 'Mật khẩu xác nhận không khớp.';
+                    return;
+                }
+
+                if (password.length < 6) {
+                    registerError.textContent = 'Mật khẩu phải có ít nhất 6 ký tự.';
+                    return;
+                }
+
+                handleApiCall(
+                    '/auth/register',
+                    { email, password },
+                    registerSubmitBtn,
+                    registerSubmitText,
+                    registerSpinner,
+                    registerError
+                );
+            });
+        });
+    </script>
+</body>
+
+</html>
